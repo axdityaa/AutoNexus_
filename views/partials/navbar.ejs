@@ -1,0 +1,97 @@
+<nav
+  class="navbar navbar-expand-lg navbar-dark shadow-sm"
+  style="background: linear-gradient(90deg, #6366f1 0%, #0ea5e9 100%)"
+>
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <img
+        src="https://cpp-prod-seek-company-image-uploads.s3.ap-southeast-2.amazonaws.com/435881/logo/6b9b58a0-bcca-11ea-86d1-e52bae5cc086.png"
+        alt="Logo"
+        width="200"
+        height="50"
+        class="d-inline-block align-text-top"
+        style="border-radius: 10px; background: #fff; object-fit: cover"
+      />
+    </a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+        <li class="nav-item">
+          <a class="nav-link fw-semibold px-3" href="/" style="color: #fff"
+            >Home</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fw-semibold px-3" href="/about" style="color: #fff"
+            >About</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link fw-semibold px-3"
+            href="/brands"
+            style="color: #fff"
+            >Brands</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="btn btn-outline-light ms-2 fw-bold px-4 py-1 rounded-pill"
+            href="/booking"
+            style="border-width: 2px; transition: background 0.2s"
+            >Book</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link fw-semibold px-3"
+            href="/contact"
+            style="color: #fff"
+            >Contact</a
+          >
+        </li>
+        <% if (currentUser) { %>
+        <li class="nav-item">
+          <a
+            class="btn btn-outline-light ms-2 fw-bold px-4 py-1 rounded-pill"
+            href="/logout"
+            style="border-width: 2px; transition: background 0.2s"
+            >Logout</a
+          >
+        </li>
+        <% } else { %>
+        <li class="nav-item">
+          <a
+            class="btn btn-outline-light ms-2 fw-bold px-4 py-1 rounded-pill"
+            href="/login"
+            style="border-width: 2px; transition: background 0.2s"
+            >Login</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="btn btn-warning ms-2 fw-bold px-4 py-1 rounded-pill"
+            href="/signup"
+            style="
+              color: #1e293b;
+              border-width: 2px;
+              transition: background 0.2s;
+            "
+            >Sign Up</a
+          >
+        </li>
+        <% } %> 
+      </ul>
+    </div>
+  </div>
+</nav>

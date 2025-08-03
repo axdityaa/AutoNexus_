@@ -1,0 +1,196 @@
+  body {
+    background: linear-gradient(145deg, #e0f2fe, #f8fafc);
+    font-family: "Segoe UI", "Roboto", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Container Styling */
+  .car-details-container {
+    max-width: 1200px;
+    margin: 3rem auto;
+    padding: 1rem;
+  }
+
+  /* Title */
+  .car-title {
+    font-size: 2.4rem;
+    font-weight: 700;
+    text-align: center;
+    color: #1e293b;
+    margin-bottom: 2rem;
+  }
+
+  /* Image Viewer */
+  .image-viewer-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto 2rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .image-viewer-img {
+    width: 100%;
+    max-height: 450px;
+    object-fit: contain;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .image-viewer-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #0ea5e9;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1rem;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.3s ease-in-out;
+  }
+
+  .image-viewer-btn:hover {
+    background: #0284c7;
+  }
+
+  .image-viewer-btn.left {
+    left: -2rem;
+  }
+
+  .image-viewer-btn.right {
+    right: -2rem;
+  }
+
+  /* Description and Highlights */
+  .car-description {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #334155;
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 24px rgba(30, 41, 59, 0.05);
+    margin-bottom: 2rem;
+  }
+
+  .car-description ul {
+    padding-left: 1.2rem;
+  }
+
+  .car-description ul li {
+    margin-bottom: 0.6rem;
+  }
+
+  /* Tables */
+  .car-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(30, 41, 59, 0.07);
+    font-size: 0.95rem;
+  }
+
+  .car-info-table thead th {
+    background: #0ea5e9;
+    color: #fff;
+    padding: 0.75rem;
+    text-align: left;
+  }
+
+  .car-info-table td {
+    padding: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+    color: #1e293b;
+  }
+
+  .info-box {
+    margin-bottom: 2rem;
+  }
+
+  /* Section Heading */
+  .section-heading {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    margin-top: 2rem;
+    text-align: center;
+  }
+
+  /* Booking Button */
+  .book-btn {
+    display: inline-block;
+    background: #0ea5e9;
+    color: #fff;
+    padding: 0.8rem 2.2rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    border-radius: 2rem;
+    text-decoration: none;
+    transition: background 0.3s ease-in-out;
+    margin-top: 2rem;
+  }
+
+  .book-btn:hover {
+    background: #0284c7;
+    color: #fff;
+  }
+
+  /* Footer */
+  footer {
+    background: #1e293b !important;
+    color: #cbd5e1;
+    padding: 2rem 0 1rem 0;
+    margin-top: 4rem;
+  }
+
+  footer a {
+    color: #38bdf8;
+    text-decoration: none;
+  }
+
+  footer a:hover {
+    text-decoration: underline;
+  }
+
+  /* Navbar */
+  .navbar .btn-outline-light:hover,
+  .navbar .btn-outline-light:focus {
+    background: #fff !important;
+    color: #0ea5e9 !important;
+    border-color: #fff !important;
+  }
+
+  .navbar .btn-warning:hover,
+  .navbar .btn-warning:focus {
+    background: #fbbf24 !important;
+    color: #0ea5e9 !important;
+  }
+
+  .navbar .nav-link.active,
+  .navbar .nav-link:hover,
+  .navbar .nav-link:focus {
+    color: #fbbf24 !important;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .car-title {
+      font-size: 1.8rem;
+    }
+
+    .image-viewer-btn.left {
+      left: 0;
+    }
+
+    .image-viewer-btn.right {
+      right: 0;
+    }
+  }

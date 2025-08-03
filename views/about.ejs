@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>About | AutoNexus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap 5 CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
+
+    <!-- Optionally add fontawesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/stylesheets/about.css">
+
+  </head>
+  <body>
+    <!-- Navbar (same as index.ejs) -->
+    <%- include('partials/navbar') %>
+
+    <section class="about-hero">
+      <div class="about-hero-box text-center">
+        <h1 class="hero-title">About AutoNexus</h1>
+        <p class="hero-subtext">
+          Your trusted partner for finding the perfect car.
+        </p>
+      </div>
+    </section>
+
+    <!-- About Main Content -->
+    <div class="container about-section">
+      <h2>Who We Are</h2>
+      <p>
+        AutoNexus is a modern car showroom management platform dedicated to
+        making your car buying experience seamless, transparent, and enjoyable.
+        We bring together the best brands, the latest models, and exclusive
+        deals—all in one place.
+      </p>
+      <h2 class="mt-4">Our Mission</h2>
+      <p>
+        To empower customers with information, choice, and convenience, helping
+        them find and book their dream car with confidence and ease.
+      </p>
+      <div class="about-features row g-4 mt-4">
+        <div class="col-12 col-md-4">
+          <div class="about-feature-card h-100">
+            <i class="fas fa-car-side"></i>
+            <h5 class="mt-2">Top Brands</h5>
+            <p>
+              Choose from a wide range of premium car brands and models, all
+              under one roof.
+            </p>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="about-feature-card h-100">
+            <i class="fas fa-handshake"></i>
+            <h5 class="mt-2">Trusted Service</h5>
+            <p>
+              We ensure a transparent, honest, and customer-first approach at
+              every step.
+            </p>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="about-feature-card h-100">
+            <i class="fas fa-tags"></i>
+            <h5 class="mt-2">Best Deals</h5>
+            <p>
+              Get exclusive offers and the best prices, curated just for you.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-5">
+        <div class="col-12">
+          <h2>Company History</h2>
+          <p>
+            Founded in Bengaluru, AutoNexus has quickly become a leading name in
+            the automotive retail industry. Our team is passionate about cars
+            and committed to delivering the best possible experience for every
+            customer.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer (same as index.ejs) -->
+    <%- include('partials/footer') %>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

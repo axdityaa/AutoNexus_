@@ -1,0 +1,138 @@
+  body {
+    background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+    font-family: "Segoe UI", "Roboto", Arial, sans-serif;
+  }
+  .about-hero {
+    background: rgba(0, 187, 249, 0.887);
+    padding: 4rem 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .about-hero-box {
+    background-color: rgba(15, 23, 42, 0.85);
+    padding: 3rem 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+    color: #e2e8f0;
+    max-width: 900px;
+    width: 100%;
+    z-index: 2;
+  }
+
+  .hero-title {
+    color: #facc15;
+    font-size: 2.6rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-subtext {
+    color: #cbd5e1;
+    font-size: 1.2rem;
+  }
+
+  .about-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(64, 122, 216, 0.7);
+    z-index: 1;
+  }
+  .about-hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+  .about-hero-content h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #fbbf24 0%, #38bdf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .about-section {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 24px rgba(30, 41, 59, 0.08);
+    padding: 2.5rem 2rem;
+    margin-top: -60px;
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 3;
+  }
+  .about-section h2 {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.2rem;
+  }
+  .about-section p {
+    color: #334155;
+    font-size: 1.15rem;
+  }
+  .about-features {
+    margin-top: 2.5rem;
+  }
+  .about-feature-card {
+    background: linear-gradient(120deg, #e0e7ff 0%, #f8fafc 100%);
+    border-radius: 1rem;
+    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.07);
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .about-feature-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(30, 41, 59, 0.13);
+  }
+  .about-feature-card i {
+    font-size: 2.5rem;
+    color: #6366f1;
+    margin-bottom: 0.7rem;
+  }
+  .about-feature-card h5 {
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .about-feature-card p {
+    color: #64748b;
+    font-size: 1rem;
+  }
+  @media (max-width: 767px) {
+    .about-hero-content h1 {
+      font-size: 2rem;
+    }
+    .about-section {
+      padding: 1.2rem 0.7rem;
+    }
+  }
+  footer {
+    background: #1e293b !important;
+    color: #cbd5e1;
+    padding: 2rem 0 1rem 0;
+    margin-top: 4rem;
+  }
+  footer a {
+    color: #38bdf8;
+    text-decoration: none;
+  }
+  footer a:hover {
+    text-decoration: underline;
+  }
+.navbar .btn-warning:hover,
+.navbar .btn-warning:focus {
+  background: #fbbf24 !important;
+  color: #0ea5e9 !important;
+}
+
+.navbar .nav-link.active,
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: #fbbf24 !important;
+}

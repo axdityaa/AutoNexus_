@@ -1,0 +1,126 @@
+body {
+  background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+  font-family: "Segoe UI", "Roboto", Arial, sans-serif;
+}
+.hero-section {
+  background: url("/images/showroom-banner.jpg") center/cover no-repeat;
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  position: relative;
+}
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 187, 249, 0.887);
+  z-index: 1;
+}
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+.hero-content h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.hero-content p {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+}
+.carousel-inner img {
+  height: 400px;
+  object-fit: cover;
+  border-radius: 1rem;
+}
+.brand-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px rgba(30, 41, 59, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+.brand-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 8px 32px rgba(30, 41, 59, 0.18);
+}
+.brand-card img {
+  height: 180px;
+  object-fit: cover;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+}
+.brand-card .card-title {
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.brand-card .btn {
+  border-radius: 2rem;
+  font-weight: 500;
+}
+.more-brands-btn {
+  border-radius: 2rem;
+  font-size: 1.1rem;
+  padding: 0.75rem 2.5rem;
+  margin-top: 2rem;
+  background: linear-gradient(90deg, #6366f1 0%, #0ea5e9 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+  transition: background 0.2s;
+}
+.more-brands-btn:hover {
+  background: linear-gradient(90deg, #0ea5e9 0%, #6366f1 100%);
+  color: #fff;
+}
+footer {
+  background: #1e293b;
+  color: #cbd5e1;
+  padding: 2rem 0 1rem 0;
+  margin-top: 4rem;
+}
+footer a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+footer a:hover {
+  text-decoration: underline;
+}
+@media (max-width: 767px) {
+  .carousel-inner img {
+    height: 220px;
+  }
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+}
+.carousel-inner img {
+  height: 500px; /* Reduced from 400px */
+  object-fit: cover;
+  border-radius: 1rem;
+}
+@media (max-width: 767px) {
+  .carousel-inner img {
+    height: 140px; /* Reduced for mobile */
+  }
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+}
+.navbar .btn-warning:hover,
+.navbar .btn-warning:focus {
+  background: #fbbf24 !important;
+  color: #0ea5e9 !important;
+}
+
+.navbar .nav-link.active,
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: #fbbf24 !important;
+}
