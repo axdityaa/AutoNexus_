@@ -5,7 +5,7 @@
   <div class="container">
     <a class="navbar-brand" href="/">
       <img
-        src="https://cpp-prod-seek-company-image-uploads.s3.ap-southeast-2.amazonaws.com/435881/logo/6b9b58a0-bcca-11ea-86d1-e52bae5cc086.png"
+        src="/images/logo.png"
         alt="Logo"
         width="200"
         height="50"
@@ -52,6 +52,16 @@
             >Book</a
           >
         </li>
+        <% if (currentUser) { %>
+        <li class="nav-item">
+          <a class="nav-link position-relative px-3" href="/cart" style="color: #fff">
+            Cart
+            <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+            <span class="badge bg-warning text-dark ms-1"><%= cartCount %></span>
+            <% } %>
+          </a>
+        </li>
+        <% } %>
         <li class="nav-item">
           <a
             class="nav-link fw-semibold px-3"

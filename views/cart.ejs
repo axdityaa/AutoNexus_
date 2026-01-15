@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Cart - AutoNexus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/stylesheets/index-style.css">
+</head>
+<body>
+<%- include('partials/navbar') %>
+
+<div class="container my-5">
+  <h2 class="mb-4">Your Cart (<%= cart.length %>)</h2>
+  <% if (cart.length === 0) { %>
+    <div class="alert alert-info">Your cart is empty. Browse <a href="/brands">brands</a> to add cars.</div>
+  <% } else { %>
+    <div class="row g-3">
+      <% cart.forEach(function(item){ %>
+      <div class="col-12">
+        <div class="card p-3">
+          <div class="row g-2 align-items-center">
+            <div class="col-auto" style="max-width:140px;">
+              <% if (item.imgsrc) { %>
+                <img src="<%= item.imgsrc %>" class="img-fluid rounded" alt="<%= item.carName %>">
+              <% } else if (item.images && item.images.length) { %>
+                <img src="<%= item.images[0].src %>" class="img-fluid rounded" alt="<%= item.carName %>">
+              <% } else { %>
+                <img src="/images/favicon.png" class="img-fluid rounded" alt="<%= item.carName %>">
+              <% } %>
+            </div>
+            <div class="col">
+              <h5 class="mb-1"><%= item.carName %> — <small class="text-muted"><%= item.route %></small></h5>
+              <p class="mb-1 text-muted"><%= item.carHeading || '' %></p>
+              <p class="mb-1"><strong>Price:</strong> <%= item.price || 'N/A' %></p>
+            </div>
+            <div class="col-auto text-end">
+              <form action="/cart/remove" method="post">
+                <input type="hidden" name="ref" value="<%= item.ref %>">
+                <button class="btn btn-sm btn-outline-danger">Remove</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <div class="mt-4">
+    <a href="/" class="btn btn-secondary">Continue browsing</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

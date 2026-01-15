@@ -34,6 +34,7 @@ app.use(passport.session());
 app.use((req, res, next) => {
   res.locals.currentUser = req.user || null;
   res.locals.isAuthenticated = req.isAuthenticated();
+  res.locals.cartCount = (req.user && req.user.cart) ? req.user.cart.length : 0;
   next();
 });
 
@@ -147,6 +148,45 @@ app.get("/brands", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.redirect("/");
+  }
+});
+
+// -------------------- Cart Routes --------------------
+app.get("/cart", isLoggedIn, (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      const cart = user && user.cart ? user.cart : [];
+      res.render("cart", { cart });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.redirect("/");
+    });
+});
+
+app.post("/cart/remove", isLoggedIn, async (req, res) => {
+  try {
+    const { ref } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.redirect("/login");
+    const idx = user.cart.findIndex((item) => item.ref === ref);
+    if (idx > -1) {
+      const removed = user.cart.splice(idx, 1)[0];
+      await user.save();
+      // restore availability for the removed car
+      const car = await Car.findOne({ "carType.ref": ref });
+      if (car) {
+        const carType = car.carType.find((ct) => ct.ref === ref);
+        if (carType) {
+          carType.avaibality = (carType.avaibality || 0) + 1;
+          await car.save();
+        }
+      }
+    }
+    res.redirect("/cart");
+  } catch (err) {
+    console.error(err);
+    res.redirect("/cart");
   }
 });
 

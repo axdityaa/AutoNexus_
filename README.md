@@ -21,3 +21,6 @@
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB 
 - **Hosting:** Render.com
+
+## Start Command -> 
+- npm start
