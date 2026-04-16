@@ -5,11 +5,29 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 
 const mongoose = require("mongoose");
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./model/User");
 const Car = require("./model/car");
+//v1
+const Payment = require("./model/payment");
 const Query = require("./model/query");
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+const RAZORPAY_MAX_AMOUNT_PAISE = Number(
+  process.env.RAZORPAY_MAX_AMOUNT_PAISE || 50000000
+);
+const TEST_PAYMENT_MODE =
+  String(process.env.TEST_PAYMENT_MODE || "false").toLowerCase() === "true";
+const TEST_PAYMENT_AMOUNT_PAISE = Number(
+  process.env.TEST_PAYMENT_AMOUNT_PAISE || 10000
+);
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -17,6 +35,8 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 app.set("view engine", "ejs");
+//v1
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
@@ -45,6 +65,27 @@ passport.deserializeUser(User.deserializeUser());
 function isLoggedIn(req, res, next) {
   if (req.isAuthenticated()) return next();
   res.redirect("/login");
+}
+//v1
+
+function parseCarPriceToRupees(rawPrice) {
+  if (rawPrice === null || rawPrice === undefined) return null;
+  const text = String(rawPrice).toLowerCase().replace(/,/g, " ").trim();
+  const matches = text.match(/\d+(?:\.\d+)?/g);
+  if (!matches || matches.length === 0) return null;
+
+  // For ranges like "3.95 - 6.35 Lakh", use the first numeric value.
+  const baseValue = Number(matches[0]);
+  if (!Number.isFinite(baseValue) || baseValue <= 0) return null;
+
+  let multiplier = 1;
+  if (/(crore|\bcr\b)/.test(text)) {
+    multiplier = 10000000;
+  } else if (/(lakh|lac)/.test(text)) {
+    multiplier = 100000;
+  }
+
+  return baseValue * multiplier;
 }
 
 // -------------------- Auth Routes --------------------
@@ -105,36 +146,19 @@ app.post("/contact", async (req, res) => {
 // -------------------- Booking Routes --------------------
 app.get("/booking", (req, res) => {
   Car.find({}).then((result) => {
-    if (result) res.render("booking", { Allcar: result });
+    if (result)
+      res.render("booking", {
+        Allcar: result,
+        testPaymentMode: TEST_PAYMENT_MODE,
+      });
     else res.redirect("/booking");
   });
 });
 
 app.post("/booking", (req, res) => {
-  const CAR = req.body.model.split(",");
-  if (!req.isAuthenticated()) return res.redirect("/login");
-  const UserName = req.user.username;
-  Car.findOne({ company: CAR[1] }).then((result) => {
-    if (!result) return res.redirect("/");
-    const carObj = result.carType.find((car) => car.carName === CAR[0]);
-    if (carObj && carObj.avaibality > 0) {
-      carObj.avaibality--;
-      result.save();
-      User.findOne({ username: UserName }).then((user) => {
-        if (user) {
-          user.cart.push(carObj);
-          user.save();
-        }
-      });
-      res.send(
-        '<script>alert("Booking Successful"); window.location.href = "/"; </script>'
-      );
-    } else {
-      res.send(
-        '<script>alert("Currently Not Available"); window.location.href = "/booking"; </script>'
-      );
-    }
-  });
+  return res.status(403).send(
+    '<script>alert("Direct booking is disabled. Please complete payment to confirm booking."); window.location.href = "/booking"; </script>'
+  );
 });
 
 // -------------------- Brands Page --------------------
@@ -187,6 +211,237 @@ app.post("/cart/remove", isLoggedIn, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.redirect("/cart");
+  }
+});
+//v1
+
+// -------------------- Payment Routes --------------------
+app.post("/payment/create-order", async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Login required" });
+    }
+
+    const carRef = req.body.carRef || req.body.ref;
+    if (!carRef || typeof carRef !== "string") {
+      return res.status(400).json({ message: "carRef is required" });
+    }
+
+    const carDoc = await Car.findOne({ "carType.ref": carRef.trim() });
+    if (!carDoc) {
+      return res.status(404).json({ message: "Selected car not found" });
+    }
+
+    const selectedCar = carDoc.carType.find((car) => car.ref === carRef.trim());
+    if (!selectedCar) {
+      return res.status(404).json({ message: "Selected car not found" });
+    }
+
+    if ((selectedCar.avaibality || 0) <= 0) {
+      return res.status(409).json({ message: "Car is currently unavailable" });
+    }
+
+    const amountInRupees = parseCarPriceToRupees(selectedCar.price);
+    if (!amountInRupees) {
+      return res.status(400).json({ message: "Invalid car price" });
+    }
+
+    const originalAmountInPaise = Math.round(amountInRupees * 100);
+    let amountInPaise = originalAmountInPaise;
+
+    if (TEST_PAYMENT_MODE) {
+      amountInPaise = Math.min(originalAmountInPaise, TEST_PAYMENT_AMOUNT_PAISE);
+      if (!Number.isFinite(amountInPaise) || amountInPaise <= 0) {
+        return res.status(400).json({
+          message: "Invalid test payment amount configuration",
+        });
+      }
+    }
+
+    if (amountInPaise > RAZORPAY_MAX_AMOUNT_PAISE) {
+      return res.status(400).json({
+        message:
+          "Selected car amount exceeds online payment limit. Please choose a lower-priced car or contact support.",
+      });
+    }
+
+    const currency = "INR";
+    const razorpayOrder = await razorpay.orders.create({
+      amount: amountInPaise,
+      currency,
+      receipt: `rcpt_${Date.now()}_${carRef.slice(-6)}`,
+      notes: {
+        userId: String(req.user._id),
+        carRef: selectedCar.ref,
+      },
+    });
+
+    await Payment.create({
+      userId: req.user._id,
+      username: req.user.username,
+      company: carDoc.company,
+      carRef: selectedCar.ref,
+      carName: selectedCar.carName,
+      amount: amountInPaise,
+      originalAmount: originalAmountInPaise,
+      isTestCharge: TEST_PAYMENT_MODE,
+      currency,
+      razorpayOrderId: razorpayOrder.id,
+      status: "created",
+    });
+
+    return res.json({
+      orderId: razorpayOrder.id,
+      amount: amountInPaise,
+      currency,
+      key: process.env.RAZORPAY_KEY_ID,
+      car: {
+        ref: selectedCar.ref,
+        name: selectedCar.carName,
+        company: carDoc.company,
+        price: amountInRupees,
+        priceDisplay: selectedCar.price,
+        image: selectedCar.imgsrc || (selectedCar.images && selectedCar.images[0] ? selectedCar.images[0].src : null),
+      },
+      paymentMode: TEST_PAYMENT_MODE ? "test-token" : "full-amount",
+      originalAmount: originalAmountInPaise,
+    });
+  } catch (err) {
+    console.error("Create order error:", err);
+    const razorpayMessage =
+      err && err.error && err.error.description
+        ? err.error.description
+        : "Unable to create payment order";
+    return res.status(500).json({ message: razorpayMessage });
+  }
+});
+//v1
+
+app.post("/payment/verify", async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Login required" });
+    }
+
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ message: "Missing Razorpay verification fields" });
+    }
+
+    const payload = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(payload)
+      .digest("hex");
+
+    const isSignatureValid =
+      expectedSignature.length === razorpay_signature.length &&
+      crypto.timingSafeEqual(
+        Buffer.from(expectedSignature),
+        Buffer.from(razorpay_signature)
+      );
+
+    const payment = await Payment.findOne({ razorpayOrderId: razorpay_order_id });
+    if (!payment) {
+      return res.status(404).json({ message: "Payment order not found" });
+    }
+
+    if (String(payment.userId) !== String(req.user._id)) {
+      return res.status(403).json({ message: "Unauthorized payment verification" });
+    }
+
+    if (!isSignatureValid) {
+      payment.status = "failed";
+      payment.razorpayPaymentId = razorpay_payment_id;
+      payment.razorpaySignature = razorpay_signature;
+      await payment.save();
+      return res.status(400).json({ message: "Invalid payment signature" });
+    }
+
+    const razorpayOrder = await razorpay.orders.fetch(razorpay_order_id);
+    if (!razorpayOrder) {
+      return res.status(400).json({ message: "Unable to fetch Razorpay order" });
+    }
+
+    if (
+      Number(razorpayOrder.amount) !== Number(payment.amount) ||
+      String(razorpayOrder.currency || "").toUpperCase() !==
+        String(payment.currency || "").toUpperCase()
+    ) {
+      payment.status = "failed";
+      payment.razorpayPaymentId = razorpay_payment_id;
+      payment.razorpaySignature = razorpay_signature;
+      await payment.save();
+      return res.status(400).json({ message: "Order amount/currency mismatch" });
+    }
+
+    if (payment.status === "paid") {
+      return res.json({ message: "Payment already verified", status: "paid" });
+    }
+
+    if (!payment.carRef) {
+      return res.status(400).json({ message: "Missing selected car information" });
+    }
+
+    const carDoc = await Car.findOne({
+      company: String(payment.company || "").toLowerCase(),
+      "carType.ref": payment.carRef,
+    });
+
+    const fallbackCarDoc =
+      carDoc || (await Car.findOne({ "carType.ref": payment.carRef }));
+
+    if (!fallbackCarDoc) {
+      return res.status(404).json({ message: "Selected car not found" });
+    }
+
+    const carItem = fallbackCarDoc.carType.find((c) => c.ref === payment.carRef);
+    if (!carItem) {
+      return res.status(404).json({ message: "Selected car not found" });
+    }
+
+    if ((carItem.avaibality || 0) <= 0) {
+      return res.status(409).json({ message: "Car is currently unavailable" });
+    }
+
+    carItem.avaibality -= 1;
+    await fallbackCarDoc.save();
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const existsInCart = user.cart.some((item) => item.ref === payment.carRef);
+    if (!existsInCart) {
+      user.cart.push(carItem);
+      await user.save();
+    }
+
+    payment.status = "paid";
+    payment.razorpayPaymentId = razorpay_payment_id;
+    payment.razorpaySignature = razorpay_signature;
+    await payment.save();
+
+    return res.json({
+      message: "Payment verified and booking confirmed",
+      status: "paid",
+      paymentId: razorpay_payment_id,
+      orderId: razorpay_order_id,
+      car: {
+        ref: carItem.ref,
+        name: carItem.carName,
+        company: fallbackCarDoc.company,
+      },
+    });
+  } catch (err) {
+    console.error("Verify payment error:", err);
+    return res.status(500).json({ message: "Unable to verify payment" });
   }
 });
 

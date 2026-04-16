@@ -28,14 +28,25 @@
     <!-- Booking Form Section -->
     <div class="container d-flex justify-content-center">
         <div class="booking-section w-100">
-            <form class="booking-form" action="/booking" method="post">
+            <% if (typeof testPaymentMode !== 'undefined' && testPaymentMode) { %>
+                <div class="alert alert-info" role="alert">
+                    <strong>Test mode is enabled:</strong> Use Razorpay test instruments only (test UPI/test card). Real payment instruments can fail in test mode.
+                </div>
+            <% } %>
+            <form class="booking-form" id="bookingForm">
                 <div class="mb-3">
                     <label for="model" class="form-label">Select Your Car Model</label>
                     <select name="model" id="model" required>
                         <option value="">|--select car--|</option>
                         <% for(let i=0;i<Allcar.length;i++){ %>
                             <% for(let j=0;j<Allcar[i].carType.length;j++){ %>
-                                <option value="<%=Allcar[i].carType[j].carName%>,<%=Allcar[i].company%>">
+                                <option
+                                    value="<%= Allcar[i].carType[j].ref %>"
+                                    data-company="<%= Allcar[i].company %>"
+                                    data-name="<%= Allcar[i].carType[j].carName %>"
+                                    data-availability="<%= Allcar[i].carType[j].avaibality || 0 %>"
+                                    data-price="<%= Allcar[i].carType[j].price || '' %>"
+                                >
                                     <%=Allcar[i].company%> <%=Allcar[i].carType[j].carName%>
                                 </option>
                             <% } %>
@@ -59,9 +70,147 @@
                     <button type="submit" name="book" class="btn">Book the Car</button>
                 </div>
             </form>
+            <div id="paymentDebug" class="alert alert-warning mt-3 d-none" role="alert"></div>
         </div>
     </div>
 
     <!-- Footer  -->
 <%- include('partials/footer') %>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        <script>
+            const bookingForm = document.getElementById("bookingForm");
+            const modelSelect = document.getElementById("model");
+            const paymentDebug = document.getElementById("paymentDebug");
+
+            function showPaymentDebug(title, details) {
+                const safeDetails = details ? String(details) : "No additional details provided.";
+                paymentDebug.classList.remove("d-none");
+                paymentDebug.innerHTML = `<strong>${title}</strong><br>${safeDetails}`;
+            }
+
+            function clearPaymentDebug() {
+                paymentDebug.classList.add("d-none");
+                paymentDebug.textContent = "";
+            }
+
+            bookingForm.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                clearPaymentDebug();
+
+                const selectedOption = modelSelect.options[modelSelect.selectedIndex];
+                const carRef = modelSelect.value;
+                const company = selectedOption ? selectedOption.dataset.company : "";
+                const carName = selectedOption ? selectedOption.dataset.name : "";
+                const availability = Number(selectedOption ? selectedOption.dataset.availability : 0);
+
+                if (!carRef) {
+                    alert("Please select a car.");
+                    return;
+                }
+
+                if (!availability || availability <= 0) {
+                    alert("Selected car is currently unavailable.");
+                    return;
+                }
+
+                try {
+                    const createOrderResponse = await fetch("/payment/create-order", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            carRef,
+                            company,
+                        }),
+                    });
+
+                    const createOrderData = await createOrderResponse.json();
+                    if (!createOrderResponse.ok) {
+                        showPaymentDebug("Create Order Failed", createOrderData.message || "Unknown server error.");
+                        alert(createOrderData.message || "Unable to create order.");
+                        if (createOrderResponse.status === 401) {
+                            window.location.href = "/login";
+                        }
+                        return;
+                    }
+
+                    const options = {
+                        key: createOrderData.key,
+                        amount: createOrderData.amount,
+                        currency: createOrderData.currency,
+                        name: "AutoNexus",
+                        description: `Booking for ${carName || (createOrderData.car && createOrderData.car.name) || "selected car"}`,
+                        order_id: createOrderData.orderId,
+                        prefill: {
+                            name: document.getElementById("name").value,
+                            email: document.getElementById("email").value,
+                            contact: document.getElementById("phone").value,
+                        },
+                        handler: async function (response) {
+                            try {
+                                const verifyResponse = await fetch("/payment/verify", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_signature: response.razorpay_signature,
+                                    }),
+                                });
+
+                                const verifyData = await verifyResponse.json();
+                                if (!verifyResponse.ok) {
+                                    showPaymentDebug(
+                                        "Verify Failed",
+                                        `status=${verifyResponse.status}; message=${verifyData.message || "Unknown verification error."}`
+                                    );
+                                    alert(verifyData.message || "Payment verification failed.");
+                                    return;
+                                }
+
+                                alert("Payment successful! Booking confirmed.");
+                                window.location.href = "/cart";
+                            } catch (err) {
+                                console.error("Verify request error:", err);
+                                showPaymentDebug("Verify Request Error", err && err.message ? err.message : "Network or server issue.");
+                                alert("Could not verify payment. Please contact support.");
+                            }
+                        },
+                        modal: {
+                            ondismiss: function () {
+                                showPaymentDebug("Payment Cancelled", "Checkout was closed before payment completion.");
+                                alert("Payment cancelled.");
+                            },
+                        },
+                        theme: {
+                            color: "#0f172a",
+                        },
+                    };
+
+                    const razorpayCheckout = new Razorpay(options);
+                    razorpayCheckout.on("payment.failed", function (response) {
+                        const errorObj = (response && response.error) || {};
+                        const errorMsg =
+                            errorObj.description ||
+                            "Payment failed. Please try again.";
+                        showPaymentDebug(
+                            "Razorpay Payment Failed",
+                            `code=${errorObj.code || "NA"}; description=${errorObj.description || "NA"}; source=${errorObj.source || "NA"}; step=${errorObj.step || "NA"}; reason=${errorObj.reason || "NA"}; metadata=${JSON.stringify(errorObj.metadata || {})}`
+                        );
+                        alert(errorMsg);
+                    });
+
+                    razorpayCheckout.open();
+                } catch (error) {
+                    console.error("Create order error:", error);
+                    showPaymentDebug("Create Order Request Error", error && error.message ? error.message : "Unknown request error.");
+                    alert("Unable to start payment. Please try again.");
+                }
+            });
+        </script>
+</body>
+</html>
